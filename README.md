@@ -27,4 +27,4 @@ $ docker compose -f docker-compose.prod.yml up --scale prod=4
 
 ---
 
-## **_While testing I found that ngnix was cause issue sometimes with upstream of single `server prod:3000`, if it happens just restart the ngnix container and it should work just fine_**
+## **_While testing I found that ngnix was only load balancing to one instance with upstream of single server prod:3000, if it happens just restart the ngnix container and it should work just fine._**
