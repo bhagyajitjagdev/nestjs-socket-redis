@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Socket.IO Test</title>
+    <script
+      src="https://cdn.socket.io/4.6.0/socket.io.min.js"
+      integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+"
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        // Function to parse query parameters
+        function getQueryParam(param) {
+          var queryParams = new URLSearchParams(window.location.search);
+          return queryParams.get(param);
+        }
+
+        // Get userId from URL query parameters
+        var userId = getQueryParam('userId') || 'defaultUser';
+
+        var socket = io('http://localhost:8080', {
+          query: {
+            userId: userId,
+          },
+          transports: ['websocket'],
+        });
+
+        socket.on('connect', function () {
+          console.log('Connected with user ID:', socket.io.opts.query.userId);
+        });
+
+        socket.on('message', function (data) {
+          console.log('Message received:', data);
+        });
+
+        socket.on('connected_instance', function (data) {
+          console.log('Connected Instance:', data);
+        });
+
+        socket.on('disconnect', function () {
+          console.log('Disconnected from the server');
+        });
+
+        socket.on('send_message', function (data) {
+          console.log('Send Message received:', data);
+        });
+
+        document
+          .getElementById('sendMessage')
+          .addEventListener('click', function () {
+            // Get the values from the input fields
+            var userId = document.getElementById('userId').value;
+            var messageToSend = document.getElementById('message').value;
+
+            // Emit the message through the socket
+            socket.emit('send_message', {
+              userId: userId,
+              message: messageToSend,
+            });
+
+            console.log(`Message sent to ${userId}: ${messageToSend}`);
+          });
+      });
+    </script>
+  </head>
+  <body>
+    <h1>Socket.IO Test</h1>
+    <p>Check the console for socket.io messages.</p>
+
+    <label for="userId">User ID:</label>
+    <input type="text" id="userId" placeholder="Enter User ID" />
+
+    <label for="message">Message:</label>
+    <input type="text" id="message" placeholder="Enter Message" />
+
+    <button id="sendMessage">Send Message</button>
+  </body>
+</html>
