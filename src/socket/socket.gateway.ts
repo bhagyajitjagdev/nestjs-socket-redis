@@ -36,11 +36,10 @@ export class SocketGateway
     if (socketIds && Array.isArray(socketIds) && socketIds.length) {
       socketIds.push(socketId);
       await this.cacheManager.set(`userId:${userId}`, [...new Set(socketIds)]);
-      await this.cacheManager.set(`socketId:${socketId}`, userId);
     } else {
       await this.cacheManager.set(`userId:${userId}`, [socketId]);
-      await this.cacheManager.set(`socketId:${socketId}`, userId);
     }
+    await this.cacheManager.set(`socketId:${socketId}`, userId);
   }
 
   async getSocketId(userId: string): Promise<string[] | null> {
@@ -51,7 +50,8 @@ export class SocketGateway
     return this.cacheManager.get(`socketId:${socketId}`);
   }
 
-  async removeUserId(userId: string, socketId: string): Promise<void> {
+  async removeUserId(socketId: string): Promise<string> {
+    const userId = await this.getUserId(socketId);
     const socketIds = await this.getSocketId(userId);
 
     if (socketIds) {
@@ -64,6 +64,8 @@ export class SocketGateway
       }
     }
     await this.cacheManager.del(`socketId:${socketId}`);
+
+    return userId;
   }
 
   //************************************** */
@@ -85,11 +87,8 @@ export class SocketGateway
 
   // On User Disconnect
   async handleDisconnect(client: Socket) {
-    const userId = await this.getUserId(client.id);
-    if (userId) {
-      await this.removeUserId(userId, client.id);
-      console.log(`Disconnected with:`, userId);
-    }
+    const userId = await this.removeUserId(client.id);
+    console.log(`Disconnected with:`, userId);
   }
 
   sendMessageToAll(event: string, data: SocketPayload) {
